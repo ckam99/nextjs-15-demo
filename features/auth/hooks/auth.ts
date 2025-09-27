@@ -15,11 +15,12 @@ export const useLoginQuery = (callbacks: {
   });
 };
 
-export const useAuthUserQuery = () =>
-  useQuery({
+export const useAuthenticatedUserQuery = () =>{
+  return  useQuery({
     queryKey: ["authUser"],
     queryFn: async () => fetchAuthUserAction(),
   });
+}
 
 
 export const useLogoutQuery = (callbacks: { onSuccess: () => Promise<void> }) => {

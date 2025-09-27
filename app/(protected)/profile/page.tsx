@@ -1,13 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useAuthUserQuery, useLogoutQuery } from "@/features/auth/hooks/auth";
+import { useAuthenticatedUserQuery, useLogoutQuery } from "@/features/auth/hooks/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
   const router = useRouter();
 
-  const { data: user, isLoading, isError, error } = useAuthUserQuery();
+  const { data: user, isLoading, isError, error } = useAuthenticatedUserQuery();
 
   const { isPending, mutate: logout } = useLogoutQuery({
     onSuccess: async () => {

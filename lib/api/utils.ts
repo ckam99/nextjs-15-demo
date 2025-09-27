@@ -33,21 +33,6 @@ export class ApiError extends Error {
   }
 }
 
-// export class ApiError extends Error {
-//   public status: number;
-//   public data?: any;
-//  // public code: string;
-
-//   //constructor(message: string, status: number, code: string, data?: any) {
-//   constructor(message: string, status: number, data?: any) {
-//     super(message);
-//     Object.setPrototypeOf(this, ApiError.prototype);
-//     this.status = status;
-//     this.data = data;
-//    // this.code = code;
-//   }
-// }
-
 
 export async function fetcher<R = any, B = BodyInit | object>(
   url: string,

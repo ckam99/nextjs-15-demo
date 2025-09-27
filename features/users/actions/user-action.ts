@@ -10,12 +10,10 @@ export const fetchUserAction = async (userId: string): Promise<User> => {
       throw new Error(err.message || "Erreur inconnue");
     }
     return await res.json();
-    
 };
 
 export const fetchUsersAction = async (): Promise<ResponseResult<User[]>> => {
   const result = await api.get<ResponseResult<User[]>>(`/users`);
-  //const result = await api.get<ResponseResult<User[]>>(`/tests/users`);
     console.log("daata users", result);
   return result;
 };
