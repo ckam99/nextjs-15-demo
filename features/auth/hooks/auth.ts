@@ -10,7 +10,7 @@ export const useLoginQuery = (callbacks: {
     mutationFn: signInAction,
     onSuccess: callbacks.onSuccess,
     onError: (error) => {
-      console.error(error.message);
+     // console.error(error.message);
     },
   });
 };

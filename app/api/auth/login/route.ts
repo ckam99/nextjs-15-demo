@@ -1,12 +1,12 @@
-import { FetchRequest, HandleApiError } from "@/app/api/utils";
 import { Token } from "@/features/auth/types/auth";
+import { safeFetch, HandleApiError } from "@/lib/api/server";
 import { NextResponse, NextRequest } from "next/server";
 
 export async function POST(_request: NextRequest, _response: NextResponse) {
   try {
     const body = await _request.json();
     console.log("=== REQ body===", body);
-    const data = await FetchRequest<Token>("/auth/email/login", {
+    const data = await safeFetch<Token>("/auth/email/login", {
       method: "POST",
       body: body,
       request: _request,

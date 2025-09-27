@@ -4,11 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(_request: NextRequest) {
   const cookieStore = await cookies();
-  cookieStore.delete("token")
-  console.log("=== logout ===");
+  cookieStore.delete("token");
   _request.cookies.clear()
-  return NextResponse.json(
-    { message: "Unauthorized", redirect: "/auth/sign-in" },
-    { status: 401 }
-  );
+  return NextResponse.json({});
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { User } from "@/features/users/types/user";
-import { FetchRequest, HandleApiError } from "../../utils";
+import { HandleApiError, safeFetch } from "@/lib/api/server";
 
 
 
@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, ctx: RouteContext) {
     if (!id) {
       throw new Error("Invalid ID: " + id);
     }
-    const data = await FetchRequest<User>(`/users/${id}`, {
+    const data = await safeFetch<User>(`/users/${id}`, {
       method: "GET",
       request: _request,
     });

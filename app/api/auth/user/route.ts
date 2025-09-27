@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { User } from "@/features/users/types/user";
-import { FetchRequest, HandleApiError } from "../../utils";
+import { HandleApiError, safeFetch } from "@/lib/api/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const data = await FetchRequest<User[]>("/users/me", {
+    const data = await safeFetch<User[]>("/users/me", {
       method: "GET",
       request,
     });
