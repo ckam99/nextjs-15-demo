@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import clsx from "clsx";
-import type { AppRoute } from "../../lib/routes"; // <- ici on importe les types
+import type { AppRoute } from "../../lib/routes/routes"; // <- ici on importe les types
 
 type NavLinkProps = {
   href: AppRoute;

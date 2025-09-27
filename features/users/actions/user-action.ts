@@ -11,6 +11,7 @@ export const fetchUserAction = async (userId: string): Promise<User> => {
 
 export const fetchUsersAction = async (): Promise<ResponseResult<User[]>> => {
   const result = await api.get<ResponseResult<User[]>>(`/users`);
+  //const result = await api.get<ResponseResult<User[]>>(`/tests/users`);
     console.log("daata users", result);
   return result;
 };

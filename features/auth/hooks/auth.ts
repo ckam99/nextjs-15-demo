@@ -1,5 +1,7 @@
+
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { signInAction } from "../actions/login";
+import { fetchAuthUserAction, signInAction } from "../actions/login";
+import { logoutAction } from "../actions/logout";
 
 export const useLoginQuery = (callbacks: {
   onSuccess: () => Promise<void>;
@@ -13,8 +15,16 @@ export const useLoginQuery = (callbacks: {
   });
 };
 
-// export const useAuthUserQuery = () =>
-//   useQuery({
-//     queryKey: ["authUser"],
-//     queryFn: () => getLoggedUserAction(),
-// });
+export const useAuthUserQuery = () =>
+  useQuery({
+    queryKey: ["authUser"],
+    queryFn: () => fetchAuthUserAction(),
+  });
+
+
+export const useLogoutQuery = (callbacks: { onSuccess: () => Promise<void> }) => {
+  return useMutation({
+    mutationFn: logoutAction,
+    onSuccess: callbacks.onSuccess,
+  });
+};

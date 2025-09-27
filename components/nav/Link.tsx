@@ -3,7 +3,7 @@
 import NextLink from "next/link";
 import type { LinkProps } from "next/link";
 import type { ReactNode } from "react";
-import type { AppLinkHref } from "@/lib/routes";
+import type { AppLinkHref } from "@/lib/routes/routes";
 import { resolvePath } from "@/lib/resolvePath";
 
 type AppLinkProps = Omit<LinkProps, "href"> & {

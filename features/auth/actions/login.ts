@@ -1,14 +1,14 @@
-import axios from "@/lib/axios";
-import {z} from "zod";
 
-export const loginRequestSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z
-    .string("Password is required")
-    .min(6, "Password must be at least 6 characters long"),
-});
 
-type LoginRequest = z.infer<typeof loginRequestSchema>;
+import { api } from "@/lib/api/client";
+import type { LoginRequest } from "../schemas/auth";
+import { User } from "@/features/users/types/user";
 
-export const signInAction = async (data: LoginRequest) =>
-  await axios.post(`auth/email/login`, data);
+
+export const signInAction = async (body: LoginRequest) =>
+  // await api.post(`tests/login`, { body });
+ await api.post(`auth/login`, {body});
+
+ export const fetchAuthUserAction = async () =>
+  await api.get<User>(`/auth/user`);
+  // await api.get<User>(`tests/users/me`);

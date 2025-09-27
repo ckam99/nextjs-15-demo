@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import clsx from "clsx";
-import type { AppRoute } from "../../lib/routes";
+import type { AppRoute } from "../../lib/routes/routes";
 
 type NestlyNavLinkProps = {
   href: AppRoute;

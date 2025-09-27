@@ -1,5 +1,5 @@
 // resolvePath.ts
-import type { AppLinkHref } from "./routes";
+import type { AppLinkHref } from "./routes/routes";
 
 export function resolvePath(href: AppLinkHref): string {
   if (typeof href === "string") return href;
