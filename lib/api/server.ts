@@ -1,54 +1,100 @@
+import { redirect } from "next/navigation";
+import { ApiError, FetchOptions } from "./utils";
+import { NextRequest, NextResponse } from "next/server";
 
-import { cookies } from "next/headers";
-import { ApiError, fetcher, FetcherMethod, FetchOptions } from "./utils";
-import { NextResponse } from "next/server";
-
-
-async function withToken<R, B = any>(
-  url: string,
-  method?: FetcherMethod,
-  options: FetchOptions<B> = {}
-): Promise<R> {
-  const cookie = await cookies();
-  const token = cookie.get("token")?.value;
-  console.log("API TOKEN SESSION", token?.substring(0, 10) + "...");
-  
-  return fetcher<R, B>(url, method, options, process.env.API_URL, token);
+interface ApiFetchOptions<T, K> extends FetchOptions<K> {
+  request?: NextRequest;
 }
 
-// API avec token
-export const api = {
-  get: <R>(url: string, options: FetchOptions = {}) =>
-    withToken<R>(url, "GET", options),
-  post: <R, B = any>(url: string, options: FetchOptions<B> = {}) =>
-    withToken<R, B>(url, "POST", options),
-  put: <R, B = any>(url: string, options: FetchOptions<B> = {}) =>
-    withToken<R, B>(url, "PUT", options),
-  patch: <R, B = any>(url: string, options: FetchOptions<B> = {}) =>
-    withToken<R, B>(url, "PATCH", options),
-  delete: <R>(url: string, options: FetchOptions = {}) =>
-    withToken<R>(url, "DELETE", options),
-};
+export async function safeFetch<T, K = any>(
+  path: string,
+  { method = "GET", request, body, headers = {} }: ApiFetchOptions<T, K> = {}
+) {
+  let url = process.env.API_URL || "";
+  if (!path.startsWith("/")) url += "/";
+  url += path;
 
 
+  if (request && request.url) {
+    const originalUrl = new URL(request.url);
+    const queryString = originalUrl.searchParams.toString();
 
-export async function HandleApiError(error: unknown) {
-  console.error("API_ERROR", error);
+    if (queryString) {
+      const hasExistingParams = url.includes("?");
+      url += hasExistingParams ? `&${queryString}` : `?${queryString}`;
+    }
+  }
 
+  console.log("=== ENDPOINT URL ===", url);
+  
+
+  const fetchHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...headers,
+  };
+
+  if (request) {
+    const token = request.cookies.get("token")?.value;
+    //|| request.headers.get('authorization');
+    if (token) fetchHeaders["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(url, {
+    method,
+    headers: fetchHeaders,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  let data: any = {};
+
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    if (!res.ok) {
+      throw new Error(`Erreur ${res.status} : pas de contenu`);
+    }
+  } else {
+    const contentType = res.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+    } else {
+      data = await res.text();
+    }
+
+    if (!res.ok) {
+      const defaultErrMsg = `Erreur HTTP ${res.status}`;
+      if (data && typeof data === "object" && data.message) {
+        throw new ApiError(
+          data?.message || defaultErrMsg,
+          res.status,
+          data?.code || "ERR__INTERNAL",
+          data?.data
+        );
+      }
+      throw new Error(defaultErrMsg);
+    }
+  }
+  const result = data as T;
+  return result;
+}
+
+export function HandleApiError(error: any, request?: NextRequest) {
   if (error instanceof ApiError) {
-    
+    // if(error.status === 401){
+    //   redirect("/auth/sign-in");
+    // //   return NextResponse.redirect(new URL("/auth/sign-in", request?.url));
+    //    // return NextResponse.redirect("/auth/sign-in");
+    // }
     return NextResponse.json(
-      { error: error.data || error.message },
+      { code: error.code, message: error.message || "Erreur inconnue" },
       { status: error.status }
     );
   }
-
-  if (error instanceof Error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
   return NextResponse.json(
-    { error: "Erreur serveur inconnue" },
+    { code: "ERR__INTERNAL", message: error.message || "Erreur inconnue" },
     { status: 500 }
   );
 }

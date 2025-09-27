@@ -5,10 +5,9 @@ import { fetchUserAction, fetchUsersAction } from "@/features/users/actions/user
 export const useFetchUserQuery = (userId: string) => {
   return useQuery({
     queryKey: ["user", userId],
-    queryFn: () => fetchUserAction(userId),
-    //initialData: defaultValue,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
+    queryFn:  async() => fetchUserAction(userId),
+    // staleTime: 1000 * 60 * 5, // 5 minutes
+    // refetchOnWindowFocus: false,
   });
 };
 

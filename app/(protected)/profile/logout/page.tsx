@@ -1,4 +1,4 @@
-import { logoutAction } from "@/features/auth/actions/logout";
+import { logoutAction } from "@/features/auth/actions/auth";
 
 export  default async function Page() {
 

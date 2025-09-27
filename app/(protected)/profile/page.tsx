@@ -1,16 +1,19 @@
 "use client";
-import { useAuthUserQuery, useLogoutQuery } from "@/features/auth/hooks/auth";
+import { Button } from "@/components/ui/button";
+import { useAuthenticatedUserQuery, useLogoutQuery } from "@/features/auth/hooks/auth";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 export default function Page() {
   const router = useRouter();
 
-  const { data: user, isLoading, isError, error } = useAuthUserQuery();
+
+  const { data: user, isLoading, isError, error } = useAuthenticatedUserQuery();
 
   const { isPending, mutate: logout } = useLogoutQuery({
     onSuccess: async () => {
       router.push("/auth/sign-in");
+      redirect("/auth/sign-in");
     },
   });
 
@@ -24,18 +27,20 @@ export default function Page() {
 
   return (
     <div className="p-5">
-      {user?.email}
+      <div className="text-3xl"> {user?.first_name} </div>
+      <div className="text-xl"> {user?.email} </div>
       <div className="flex gap-6">
+        <Link href={"/auth/sign-in"} className="text-blue-500 hover:underline">
+          Lou out
+        </Link>
 
-        <Link href={"/auth/sign-in"} className="text-blue-500 hover:underline">Lou out</Link>
-       
-        <button
-          onClick={handleLogout}
+        <Button
+          type="button"
           className="text-blue-500 hover:underline"
+          onClick={handleLogout}
         >
           {isPending ? "..." : " Log out"}
-        </button>
-        
+        </Button>
       </div>
     </div>
   );
