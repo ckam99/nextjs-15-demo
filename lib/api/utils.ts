@@ -23,13 +23,30 @@ export type FetchOptions<B = BodyInit | object> = {
 export class ApiError extends Error {
   public status: number;
   public data?: any;
+  public code: string;
 
-  constructor(message: string, status: number, data?: any) {
+  constructor(message: string, status: number, code: string ,data?: any) {
     super(message);
     this.status = status;
     this.data = data;
+    this.code = code;
   }
 }
+
+// export class ApiError extends Error {
+//   public status: number;
+//   public data?: any;
+//  // public code: string;
+
+//   //constructor(message: string, status: number, code: string, data?: any) {
+//   constructor(message: string, status: number, data?: any) {
+//     super(message);
+//     Object.setPrototypeOf(this, ApiError.prototype);
+//     this.status = status;
+//     this.data = data;
+//    // this.code = code;
+//   }
+// }
 
 
 export async function fetcher<R = any, B = BodyInit | object>(
@@ -99,6 +116,10 @@ const finalHeaders: HeadersInit = customHeaders;
       responseData = null;
     }
   }
+
+
+  console.log("=== FETCH CLIENT===", responseData);
+  
 
   if (!response.ok) {
     if (typeof window !== "undefined" && response.status === 401) {

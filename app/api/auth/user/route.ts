@@ -4,11 +4,11 @@ import { FetchRequest, HandleApiError } from "../../utils";
 
 export async function GET(request: NextRequest) {
   try {
-    const { status, data } = await FetchRequest<User[]>("/users", {
+    const data = await FetchRequest<User[]>("/users/me", {
       method: "GET",
       request,
     });
-    return NextResponse.json(data, { status });
+    return NextResponse.json(data);
   } catch (error) {
     return HandleApiError(error);
   }

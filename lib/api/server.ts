@@ -52,3 +52,48 @@ export async function HandleApiError(error: unknown) {
     { status: 500 }
   );
 }
+
+
+
+type SafeFetchOptions = Omit<RequestInit, "body"> & {
+  body?: BodyInit | null;
+};
+
+export async function safeFetch(
+  url: string,
+  options: SafeFetchOptions = {}
+): Promise<any> {
+  const res = await fetch(url, options);
+
+  // Gérer cas 204 No Content ou body vide
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    if (!res.ok) {
+      throw new Error(`Erreur ${res.status} : pas de contenu`);
+    }
+    return null;
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+
+  let data: any = null;
+
+  if (contentType.includes("application/json")) {
+    try {
+      data = await res.json();
+    } catch {
+      data = null; // corps vide ou JSON mal formé
+    }
+  } else {
+    data = await res.text();
+  }
+
+  if (!res.ok) {
+    // Si on a un message d’erreur dans data, on le prend
+    const errorMsg =
+      (data && typeof data === "object" && data.message) ||
+      `Erreur HTTP ${res.status}`;
+    throw new Error(errorMsg);
+  }
+
+  return data;
+}

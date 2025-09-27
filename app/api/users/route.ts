@@ -5,28 +5,13 @@ import { FetchRequest, HandleApiError } from "../utils";
 import type { User } from "@/features/users/types/user";
 
 
-export async function GET(request: NextRequest) {
-  // try {
-  //   const cookie = await cookies();
-  //   const token = cookie.get("token")?.value;
-  //   console.log("TOKEN SESSION USER REQ", token?.substring(0, 10) + "...");
-
-  //   const t = request.cookies.get("token")?.value;
-  //   console.log("TOKEN SESSION USER REQ T", t?.substring(0, 10) + "...");
-
-  //   const res = await api.get("/users");
-  //   console.log("daata users", res);
-  //   return Response.json(res);
-  // } catch (error) {
-  //   return HandleApiError(error);
-  // }
-
+export async function GET(_request: NextRequest) {
   try {
-    const { status, data } = await FetchRequest<User[]>("/users", {
+    const data = await FetchRequest<User[]>("/users", {
       method: "GET",
-      request,
+      request: _request,
     });
-    return NextResponse.json(data, { status });
+    return NextResponse.json(data);
   } catch (error) {
     return HandleApiError(error);
   }

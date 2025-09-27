@@ -32,7 +32,7 @@ export default function Page() {
       },
       onSubmit: async ({ value }) => {
         console.log("form", value);
-        alert(JSON.stringify(value))
+     //   alert(JSON.stringify(value))
         //
         queryCtx.mutate(value)
       },

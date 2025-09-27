@@ -1,7 +1,8 @@
 // lib/api.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { ApiError } from "@/lib/api/utils";
+import { NextRequest, NextResponse } from "next/server";
 
-type FetchMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type FetchMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 interface ApiFetchOptions {
   method?: FetchMethod;
@@ -10,20 +11,9 @@ interface ApiFetchOptions {
   headers?: Record<string, string>;
 }
 
-export class ApiError extends Error {
-  public status: number;
-  public data: any;
-
-  constructor(message: string, status: number, data: any) {
-    super(message);
-    this.status = status;
-    this.data = data;
-  }
-}
-
 export async function FetchRequest<T>(
   path: string,
-  { method = 'GET', request, body, headers = {} }: ApiFetchOptions = {}
+  { method = "GET", request, body, headers = {} }: ApiFetchOptions = {}
 ) {
   let url = `${process.env.API_URL}${path}`;
 
@@ -34,20 +24,28 @@ export async function FetchRequest<T>(
 
     if (queryString) {
       // Append query string to backend URL
-      const hasExistingParams = url.includes('?');
+      const hasExistingParams = url.includes("?");
       url += hasExistingParams ? `&${queryString}` : `?${queryString}`;
     }
   }
 
   const fetchHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...headers,
   };
 
   if (request) {
-    const auth =  request.cookies.get("token")?.value || request.headers.get('authorization');
-    if (auth) fetchHeaders['Authorization'] = auth;
+    console.log(
+      "===FETCHREQUEST COOKIES===",
+      request.cookies.get("token")?.value
+    );
+
+    const token = request.cookies.get("token")?.value;
+    //|| request.headers.get('authorization');
+    if (token) fetchHeaders["Authorization"] = `Bearer ${token}`;
   }
+
+  console.log("===FETCHREQUEST HEADERS===", fetchHeaders);
 
   const res = await fetch(url, {
     method,
@@ -55,47 +53,53 @@ export async function FetchRequest<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  // Gestion centralisée du 204 No Content
-  if (res.status === 204) {
-    return { status: res.status, data: null };
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    if (!res.ok) {
+      throw new Error(`Erreur ${res.status} : pas de contenu`);
+    }
+    return null;
   }
 
-  // Vérifier si la réponse contient du JSON
-  const contentType = res.headers.get('content-type') || '';
-  const isJson = contentType.includes('application/json');
+  const contentType = res.headers.get("content-type") || "";
 
-  // Parser JSON seulement si présent
-  let data  = null;
-  if (isJson) {
-    // Pour éviter une erreur si le corps est vide (ex: 200 avec empty body)
+  let data: any;
+  if (contentType.includes("application/json")) {
     try {
       data = await res.json();
     } catch {
       data = null;
     }
+  } else {
+    data = await res.text();
   }
 
-  // Gestion des erreurs HTTP
   if (!res.ok) {
-    throw new ApiError(
-      data?.message || `Erreur API ${res.status}`,
-      res.status,
-      data
-    );
+    console.log("===FETCHREQUEST===", data);
+    const defaultErrMsg =`Erreur HTTP ${res.status}`;
+    if (data && typeof data === "object" && data.message) {
+        throw new ApiError(
+          data?.message || defaultErrMsg,
+          res.status,
+          data?.code || 'ERR__INTERNAL',
+          data?.data
+        );
+    }
+    throw new Error(defaultErrMsg);
   }
-  const result = data as T
-  return { status: res.status, data: result };
+  const result = data as T;
+  return result;
 }
 
-export function HandleApiError(error: unknown) {
+export function HandleApiError(error: any) {
+  console.error("=== Erreur proxy===", error);
   if (error instanceof ApiError) {
     return NextResponse.json(
-      { error: error.data || error.message },
+      { code: error.code, message: error.message || "Erreur inconnue" },
       { status: error.status }
     );
   }
   return NextResponse.json(
-    { error: 'Erreur serveur inconnue' },
+    { code: "ERR__INTERNAL", message: error.message || "Erreur inconnue" },
     { status: 500 }
   );
 }
